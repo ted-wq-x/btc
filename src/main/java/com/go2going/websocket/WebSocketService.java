@@ -1,4 +1,4 @@
-package com.go2going;
+package com.go2going.websocket;
 
 /**
  * Created by BlueT on 2017/7/3.

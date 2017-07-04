@@ -1,9 +1,10 @@
-package com.go2going;
+package com.go2going.websocket;
 
 /**
  * Created by BlueT on 2017/7/3.
  */
 
+import com.go2going.utils.MD5Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

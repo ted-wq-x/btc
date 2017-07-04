@@ -1,16 +1,24 @@
-package com.go2going;
+package com.go2going.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.go2going.websocket.WebSocketService;
+import com.go2going.ApplicationStartUp;
+import com.go2going.interfaceApi.Subject;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * Created by BlueT on 2017/7/3.
  */
+@Component
 public class BuissnesWebSocketServiceImpl implements WebSocketService {
     private Logger log = Logger.getLogger(BuissnesWebSocketServiceImpl.class);
+
+    @Resource
+    private ApplicationStartUp applicationStartUp;
     @Override
     public void onReceive(String msg){
         log.info("WebSocket Client received message: " + msg);
@@ -22,8 +30,14 @@ public class BuissnesWebSocketServiceImpl implements WebSocketService {
             return;
         }
         String channel = objects.getString("channel");
-        if ("ok_sub_spotcny_btc_trades".equals(channel)) {
-
+        Class apiClass = applicationStartUp.getApiClass(channel);
+        if (apiClass != null) {
+            try {
+                Subject o = (Subject) apiClass.newInstance();
+                o.handler(data.toJSONString());
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

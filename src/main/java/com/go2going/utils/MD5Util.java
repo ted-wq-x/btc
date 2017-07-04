@@ -1,4 +1,4 @@
-package com.go2going;
+package com.go2going.utils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

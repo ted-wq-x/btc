@@ -1,4 +1,4 @@
-package com.go2going;
+package com.go2going.websocket;
 
 import java.io.IOException;
 import java.util.zip.DataFormatException;

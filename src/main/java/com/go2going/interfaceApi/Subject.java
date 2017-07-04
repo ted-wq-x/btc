@@ -1,6 +1,6 @@
-package com.go2going.InterfaceApi;
+package com.go2going.interfaceApi;
 
-import com.go2going.WebSocketBase;
+import com.go2going.websocket.WebSocketBase;
 
 /**
  * 对api接口的订阅

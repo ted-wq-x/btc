@@ -1,5 +1,7 @@
 package com.go2going;
 
+import com.go2going.websocket.WebSocketService;
+
 /**
  * Created by BlueT on 2017/7/3.
  */
