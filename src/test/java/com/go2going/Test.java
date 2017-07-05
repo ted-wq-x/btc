@@ -4,7 +4,9 @@ import com.go2going.utils.PackageScan;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -13,8 +15,13 @@ import java.util.Set;
 public class Test {
     public static void main(String[] args) throws IOException {
         Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        calendar.set(Calendar.SECOND,0);
+        Date now = calendar.getTime();
+        calendar.add(Calendar.MINUTE,-1);
+        Date before = calendar.getTime();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println(simpleDateFormat.format(now));
+        System.out.println(simpleDateFormat.format(before));
     }
 }

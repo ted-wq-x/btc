@@ -15,14 +15,14 @@ import javax.annotation.Resource;
  */
 @Component
 public class BuissnesWebSocketServiceImpl implements WebSocketService {
-  private Logger log = Logger.getLogger(BuissnesWebSocketServiceImpl.class);
+  private Logger LOGGER = Logger.getLogger(BuissnesWebSocketServiceImpl.class);
 
   @Resource
   private ApplicationStartUp applicationStartUp;
 
   @Override
   public void onReceive(String msg) {
-    log.info("WebSocket Client received message: " + msg);
+    LOGGER.info("WebSocket Client received message: " + msg);
     JSONObject objects;
     try {
       objects = JSON.parseObject(msg);
@@ -48,7 +48,7 @@ public class BuissnesWebSocketServiceImpl implements WebSocketService {
         }
       }
     } else if (data1 instanceof JSONObject) {
-      log.debug("is not data and ignore:" + data1.toString());
+      LOGGER.debug("is not data and ignore:" + data1.toString());
     }
   }
 }
