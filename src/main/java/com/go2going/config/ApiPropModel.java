@@ -1,5 +1,6 @@
 package com.go2going.config;
 
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Component;
  * Created by BlueT on 2017/7/4.
  */
 @Component
-@ConfigurationProperties(prefix = "channels")
+@ConfigurationProperties()
 public class ApiPropModel {
     private String[] channels;
 

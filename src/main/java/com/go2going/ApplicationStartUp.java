@@ -33,6 +33,12 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
     @Resource
     private ApiPropModel apiPropModel;
 
+    /**
+     * 订阅消息处理类,用于处理WebSocket服务返回的消息
+     */
+    @Resource
+    private WebSocketService webSocketService;
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         LOGGER.info("Enter application startUp init");
@@ -53,11 +59,9 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
 
         String url = profPropModel.getUrl();
 
-        // 订阅消息处理类,用于处理WebSocket服务返回的消息
-        WebSocketService service = new BuissnesWebSocketServiceImpl();
 
         // WebSocket客户端
-        WebSoketClient client = new WebSoketClient(url, service);
+        WebSoketClient client = new WebSoketClient(url, webSocketService);
 
         // 启动客户端
         client.start();

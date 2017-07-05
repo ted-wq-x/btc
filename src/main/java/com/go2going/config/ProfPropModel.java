@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * Created by BlueT on 2017/7/4.
  */
 @Component
-@ConfigurationProperties("prof")
+@ConfigurationProperties()
 public class ProfPropModel {
 
     private String apiKey;

@@ -4,6 +4,7 @@ import com.go2going.utils.PackageScan;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Set;
 
 /**
@@ -11,7 +12,9 @@ import java.util.Set;
  */
 public class Test {
     public static void main(String[] args) throws IOException {
-        Set<Class<?>> classes = PackageScan.getClasses("com.go2going.interfaceApi");
-        System.out.println(classes);
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
     }
 }
