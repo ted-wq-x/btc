@@ -25,7 +25,7 @@ public class TradeRecordVo {
   @Column(nullable = false, columnDefinition = "float COMMENT '交易数量'")
   private Float tradeNum;
 
-  @Column(nullable = false, columnDefinition = "varchar(32) COMMENT '成交类型（bids=买方深度 asks=卖方深度）'")
+  @Column(nullable = false, columnDefinition = "varchar(32) COMMENT '成交类型（bid=买方深度 ask=卖方深度）'")
   private String tradeType;
 
   @Column(nullable = false, columnDefinition = "DATETIME COMMENT '成交时间'")

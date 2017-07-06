@@ -51,7 +51,7 @@ public class TimingTask {
     calendar.add(Calendar.MINUTE, -1);
     Date before = calendar.getTime();
     TradeRecordDao tradeRecordDao = SpringContext.getBean(TradeRecordDao.class);
-    List<TradeRecordVo> list = tradeRecordDao.findAllByTradeTimeBetweenAndAndGoodsCategory(before, now, GoodsCategory.BTC);
+    List<TradeRecordVo> list = tradeRecordDao.findAllByTradeTimeBetween(before, now);
 
 //    获取不同币种的交易数据
     Map<String, List<TradeRecordVo>> category = list.stream().
@@ -84,12 +84,12 @@ public class TimingTask {
    */
   private String combingMsg(Map<String, Float> map, String s) {
     Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, -1);
     calendar.set(Calendar.SECOND, 0);
-    calendar.set(Calendar.MINUTE, -1);
     Date time = calendar.getTime();
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:ss:mm");
     String str = "币种:%s,时间:%s,成交量:%f,买入深度:%f,卖出深度:%f";
-    StringExpression format = StringFormatter.format(str, s,simpleDateFormat.format(time),map.get("sum"),map.get("bids"),map.get("asks"));
+    StringExpression format = StringFormatter.format(str, s,simpleDateFormat.format(time),map.get("sum"),map.get("bid"),map.get("ask"));
     return format.get();
   }
 

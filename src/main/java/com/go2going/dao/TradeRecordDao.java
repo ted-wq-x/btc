@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface TradeRecordDao extends JpaRepository<TradeRecordVo, Long> {
 
-  List<TradeRecordVo> findAllByTradeTimeBetweenAndAndGoodsCategory(Date startTime, Date endTime, String goodsCategory);
+  List<TradeRecordVo> findAllByTradeTimeBetween(Date startTime, Date endTime);
 }

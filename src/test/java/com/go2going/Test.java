@@ -16,12 +16,10 @@ public class Test {
     public static void main(String[] args) throws IOException {
         Calendar calendar = Calendar.getInstance();
 
-        calendar.set(Calendar.SECOND,0);
-        Date now = calendar.getTime();
         calendar.add(Calendar.MINUTE,-1);
+        calendar.set(Calendar.SECOND,0);
         Date before = calendar.getTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(simpleDateFormat.format(now));
         System.out.println(simpleDateFormat.format(before));
     }
 }

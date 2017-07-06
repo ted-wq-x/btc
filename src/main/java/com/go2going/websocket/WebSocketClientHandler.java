@@ -19,8 +19,11 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClientHandler.class);
 
     private final WebSocketClientHandshaker handshaker;
     private ChannelPromise handshakeFuture;
@@ -48,7 +51,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("WebSocket Client disconnected!");
+        LOGGER.info("WebSocket Client disconnected!");
     }
 
     @Override
@@ -58,7 +61,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         //手动的进行websocket协议升级
         if (!handshaker.isHandshakeComplete()) {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            System.out.println("WebSocket Client connected!");
+            LOGGER.info("WebSocket Client connected!");
             handshakeFuture.setSuccess();
             return;
         }
@@ -78,9 +81,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             BinaryWebSocketFrame binaryFrame=(BinaryWebSocketFrame)frame;
             service.onReceive(decodeByteBuff(binaryFrame.content()));
         }else if (frame instanceof PongWebSocketFrame) {
-            System.out.println("WebSocket Client received pong");
+            LOGGER.info("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {
-            System.out.println("WebSocket Client received closing");
+            LOGGER.info("WebSocket Client received closing");
             ch.close();
         }
     }
