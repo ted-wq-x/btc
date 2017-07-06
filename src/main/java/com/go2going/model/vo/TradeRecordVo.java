@@ -1,5 +1,7 @@
 package com.go2going.model.vo;
 
+import org.hibernate.annotations.Table;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -9,32 +11,27 @@ import java.util.Date;
  * 网站交易记录数据
  * Created by wangq on 2017/7/5.
  */
-@Entity
-//@Table(appliesTo = "trade_record",comment = "okcoin交易记录")
+@Entity(name = "trade_record")
+@Table(appliesTo = "trade_record", comment = "okcoin交易记录")
 public class TradeRecordVo {
 
   @Id
-//  @Column(nullable = true,unique = true,columnDefinition = "COMMENT '主键'")
-  @Column(nullable = false,unique = true)
+  @Column(nullable = false, unique = true, columnDefinition = "bigint(20) COMMENT '主键'")
   private Long id;
 
-  //  @Column(nullable = true,columnDefinition="COMMENT '成交价格'")
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "float COMMENT '成交价格'")
   private Float price;
 
-  //  @Column(nullable = true,columnDefinition="COMMENT '交易数量'")
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "float COMMENT '交易数量'")
   private Float tradeNum;
 
-  //  @Column(nullable = true,columnDefinition="COMMENT '成交类型（bids=买方深度 asks=卖方深度）'")
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "varchar(32) COMMENT '成交类型（bids=买方深度 asks=卖方深度）'")
   private String tradeType;
 
-  //  @Column(nullable = true,columnDefinition="DATETIME COMMENT '成交时间'")
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "DATETIME COMMENT '成交时间'")
   private Date tradeTime;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "varchar(32) COMMENT '币种'")
   private String goodsCategory;
 
 

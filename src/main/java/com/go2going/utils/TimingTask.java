@@ -4,13 +4,17 @@ import com.go2going.config.ApiPropModel;
 import com.go2going.dao.TradeRecordDao;
 import com.go2going.model.bo.GoodsCategory;
 import com.go2going.model.vo.TradeRecordVo;
+import com.sun.javafx.binding.StringFormatter;
+import javafx.beans.binding.StringExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import sun.awt.geom.AreaOp;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,10 +30,13 @@ public class TimingTask {
   @Resource
   private ApiPropModel apiPropModel;
 
+  @Resource
+  private EmailUtils emailUtils;
+
   private Map<String, Double> remind;
 
   @PostConstruct
-  public void init(){
+  public void init() {
     remind = apiPropModel.getRemind();
   }
 
@@ -37,11 +44,11 @@ public class TimingTask {
    * 每分钟执行一次
    */
   @Scheduled(cron = "0 * * * * ?")
-  public void countTradingNum(){
+  public void countTradingNum() {
     Calendar calendar = Calendar.getInstance();
-    calendar.set(Calendar.SECOND,0);
+    calendar.set(Calendar.SECOND, 0);
     Date now = calendar.getTime();
-    calendar.add(Calendar.MINUTE,-1);
+    calendar.add(Calendar.MINUTE, -1);
     Date before = calendar.getTime();
     TradeRecordDao tradeRecordDao = SpringContext.getBean(TradeRecordDao.class);
     List<TradeRecordVo> list = tradeRecordDao.findAllByTradeTimeBetweenAndAndGoodsCategory(before, now, GoodsCategory.BTC);
@@ -53,7 +60,7 @@ public class TimingTask {
     category.forEach((s, tradeRecordVos) -> {
       Double aDouble = remind.get(s);
       if (aDouble == null) {
-        LOGGER.error("remind value is null:type={}",s);
+        LOGGER.error("remind value is null:type={}", s);
         return;
       }
       //统计不同币种的交易量
@@ -61,26 +68,34 @@ public class TimingTask {
 
       if (stringFloatMap.get("sum") >= aDouble) {
         String msg = combingMsg(stringFloatMap, s);
-        EmailUtils.sendEmail(msg);
+        emailUtils.sendEmail(msg);
       }
     });
-
 
 
   }
 
   /**
    * 整合邮件内容
-   * @param stringFloatMap
+   *
+   * @param map
    * @param s
    * @return
    */
-  private String combingMsg(Map<String, Float> stringFloatMap, String s) {
-    return null;
+  private String combingMsg(Map<String, Float> map, String s) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MINUTE, -1);
+    Date time = calendar.getTime();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:ss:mm");
+    String str = "币种:%s,时间:%s,成交量:%f,买入深度:%f,卖出深度:%f";
+    StringExpression format = StringFormatter.format(str, s,simpleDateFormat.format(time),map.get("sum"),map.get("bids"),map.get("asks"));
+    return format.get();
   }
 
   /**
    * 统计交易数据
+   *
    * @param recordVoList map->key为bid,ask,sum
    */
   private Map<String, Float> calNum(List<TradeRecordVo> recordVoList) {

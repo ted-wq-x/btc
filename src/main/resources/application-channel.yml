@@ -1,5 +1,5 @@
 # 订阅的api
-channels:  ok_sub_spotcny_btc_trades,ok_sub_spotcny_ltc_trades
+channels:  ok_sub_spotcny_ltc_trades
 
 # 提醒阈值
 remind:
