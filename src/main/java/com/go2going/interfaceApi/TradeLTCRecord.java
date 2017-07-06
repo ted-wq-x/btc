@@ -29,7 +29,7 @@ public class TradeLTCRecord extends AbstractSubject {
       recordVo.setTradeNum(jsonObject.getFloatValue(2));
       recordVo.setTradeTime(DateUtil.generateDate(jsonObject.getString(3)));
       recordVo.setTradeType(jsonObject.getString(4));
-      recordVo.setGoodsCategory(GoodsCategory.BTC);
+      recordVo.setGoodsCategory(GoodsCategory.LTC);
       recordVos.add(recordVo);
     });
 
