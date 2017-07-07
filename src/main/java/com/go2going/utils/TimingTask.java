@@ -45,6 +45,8 @@ public class TimingTask {
    */
   @Scheduled(cron = "0 * * * * ?")
   public void countTradingNum() {
+    LOGGER.info("Enter countTradingNum method");
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));//解决服务器时间问题
     Calendar calendar = Calendar.getInstance();
     calendar.set(Calendar.SECOND, 0);
     Date now = calendar.getTime();
@@ -65,14 +67,14 @@ public class TimingTask {
       }
       //统计不同币种的交易量
       Map<String, Float> stringFloatMap = calNum(tradeRecordVos);
-
-      if (stringFloatMap.get("sum") >= aDouble) {
+      Float sum = stringFloatMap.get("sum");
+      LOGGER.info("count sum={}",sum);
+      if ( sum>= aDouble) {
         String msg = combingMsg(stringFloatMap, s);
         emailUtils.sendEmail(msg);
       }
     });
-
-
+    LOGGER.info("Exit countTradingNum method");
   }
 
   /**
