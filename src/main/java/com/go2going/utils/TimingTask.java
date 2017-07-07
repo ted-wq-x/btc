@@ -89,7 +89,7 @@ public class TimingTask {
     calendar.add(Calendar.MINUTE, -1);
     calendar.set(Calendar.SECOND, 0);
     Date time = calendar.getTime();
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:ss:mm");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     String str = "币种:%s,时间:%s,成交量:%f,买入深度:%f,卖出深度:%f";
     StringExpression format = StringFormatter.format(str, s,simpleDateFormat.format(time),map.get("sum"),map.get("bid"),map.get("ask"));
     return format.get();

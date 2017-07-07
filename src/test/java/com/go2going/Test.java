@@ -1,25 +1,27 @@
 package com.go2going;
 
-import com.go2going.utils.PackageScan;
 
-import java.io.IOException;
-import java.net.URL;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Set;
+import java.util.Properties;
 
 /**
  * Created by BlueT on 2017/7/4.
  */
 public class Test {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.SECOND, 0);
+        calendar.add(Calendar.MINUTE, -1);
 
-        calendar.add(Calendar.MINUTE,-1);
-        calendar.set(Calendar.SECOND,0);
-        Date before = calendar.getTime();
+        Date time = calendar.getTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(simpleDateFormat.format(before));
+        System.out.println(simpleDateFormat.format(time));
     }
 }
