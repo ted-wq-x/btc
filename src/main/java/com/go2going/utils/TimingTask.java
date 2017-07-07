@@ -68,8 +68,8 @@ public class TimingTask {
       //统计不同币种的交易量
       Map<String, Float> stringFloatMap = calNum(tradeRecordVos);
       Float sum = stringFloatMap.get("sum");
-      LOGGER.info("count sum={}",sum);
-      if ( sum>= aDouble) {
+      LOGGER.info("count sum={}", sum);
+      if (sum >= aDouble) {
         String msg = combingMsg(stringFloatMap, s);
         emailUtils.sendEmail(msg);
       }
@@ -86,12 +86,13 @@ public class TimingTask {
    */
   private String combingMsg(Map<String, Float> map, String s) {
     Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
     calendar.add(Calendar.MINUTE, -1);
     calendar.set(Calendar.SECOND, 0);
     Date time = calendar.getTime();
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    String str = "币种:%s,时间:%s,成交量:%f,买入深度:%f,卖出深度:%f";
-    StringExpression format = StringFormatter.format(str, s,simpleDateFormat.format(time),map.get("sum"),map.get("bid"),map.get("ask"));
+    String str = "币种:%s,时间:%s,成交量:%f,买入深度:%f,卖出深度:%f,\n\n\t\t发送时间为%s";
+    StringExpression format = StringFormatter.format(str, s, simpleDateFormat.format(time), map.get("sum"), map.get("bid"), map.get("ask"), simpleDateFormat.format(now));
     return format.get();
   }
 
