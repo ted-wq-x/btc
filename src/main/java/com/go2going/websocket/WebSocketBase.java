@@ -34,6 +34,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class WebSocketBase {
 
@@ -419,9 +420,9 @@ public abstract class WebSocketBase {
  */
 class MoniterTask extends TimerTask {
 
-    private Logger log = Logger.getLogger(WebSocketBase.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
-    private int checkTime = 5000;
+    private static final int checkTime = 5000;
     private WebSocketBase client = null;
 
     public void updateTime() {
@@ -435,7 +436,9 @@ class MoniterTask extends TimerTask {
     }
 
     public void run() {
-        if (System.currentTimeMillis() - startTime > checkTime) {
+        boolean isConnect = System.currentTimeMillis() - startTime > checkTime;
+        LOGGER.info("decide is connect and result is {}",isConnect);
+        if (isConnect) {
             client.setStatus(false);
             // log.info("Moniter reconnect....... ");
             client.reConnect();

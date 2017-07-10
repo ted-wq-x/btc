@@ -44,6 +44,7 @@ public class TimingTask {
   @Scheduled(cron = "0 * * * * ?")
   public void countTradingNum() {
     LOGGER.info("Enter countTradingNum method");
+    long start = System.currentTimeMillis();
     TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));//解决服务器时间问题
     Calendar calendar = Calendar.getInstance();
     calendar.set(Calendar.SECOND, 0);
@@ -69,10 +70,10 @@ public class TimingTask {
       LOGGER.info("count sum={}", sum);
       if (sum >= aDouble) {
         String msg = combingMsg(stringFloatMap, s);
-        emailUtils.sendEmail(msg);
+        new Thread(() -> emailUtils.sendEmail(msg)).start();
       }
     });
-    LOGGER.info("Exit countTradingNum method");
+    LOGGER.info("Exit countTradingNum method and use time:{}ms",System.currentTimeMillis()-start);
   }
 
   /**

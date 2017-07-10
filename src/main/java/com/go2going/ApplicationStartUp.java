@@ -45,7 +45,7 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
         initApiMap();
 
         //启动websocket
-//        startUpWebSocket();
+        startUpWebSocket();
         LOGGER.info("Exit application startUp init");
     }
 
