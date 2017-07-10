@@ -17,11 +17,8 @@ import java.util.Properties;
 public class Test {
     public static void main(String[] args) throws Exception {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.SECOND, 0);
-        calendar.add(Calendar.MINUTE, -1);
-
-        Date time = calendar.getTime();
+        calendar.set(2017,Calendar.JULY,6 ,14,28,0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(simpleDateFormat.format(time));
+        System.out.println(simpleDateFormat.format(calendar.getTime()));
     }
 }

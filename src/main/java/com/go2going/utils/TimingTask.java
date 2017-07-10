@@ -2,7 +2,6 @@ package com.go2going.utils;
 
 import com.go2going.config.ApiPropModel;
 import com.go2going.dao.TradeRecordDao;
-import com.go2going.model.bo.GoodsCategory;
 import com.go2going.model.vo.TradeRecordVo;
 import com.sun.javafx.binding.StringFormatter;
 import javafx.beans.binding.StringExpression;
@@ -10,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import sun.awt.geom.AreaOp;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
