@@ -6,13 +6,7 @@ package com.go2going.websocket;
 
 import com.go2going.utils.MD5Util;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,24 +17,20 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class WebSocketBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketBase.class);
     private WebSocketService service = null;
-    private Timer timerTask = null;
+    private ScheduledExecutorService scheduledExecutorService = null;
     private MoniterTask moniter = null;
     private EventLoopGroup group = null;
     private Bootstrap bootstrap = null;
@@ -60,19 +50,18 @@ public abstract class WebSocketBase {
     public void start() {
         LOGGER.info("Enter start method");
         if (url == null) {
-            LOGGER.info("WebSocketClient start error  url can not be null");
+            LOGGER.error("WebSocketClient start error  url can not be null");
             return;
         }
         if (service == null) {
-            LOGGER.info("WebSocketClient start error  WebSocketService can not be null");
+            LOGGER.error("WebSocketClient start error  WebSocketService can not be null");
             return;
         }
         moniter = new MoniterTask(this);
         this.connect();
         //定时任务
-
-        timerTask = new Timer();
-        timerTask.schedule(moniter, 1000, 5000);
+        scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
+        scheduledExecutorService.scheduleWithFixedDelay(moniter, 1000, 5000, TimeUnit.MILLISECONDS);
         LOGGER.info("Exit start method");
     }
 
@@ -420,11 +409,11 @@ public abstract class WebSocketBase {
 /**
  * 心跳检查
  */
-class MoniterTask extends TimerTask {
+class MoniterTask implements Runnable {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
-    private static final int checkTime = 5000;
+    private static final int checkTime = 8000;
     private WebSocketBase client = null;
 
     public void updateTime() {

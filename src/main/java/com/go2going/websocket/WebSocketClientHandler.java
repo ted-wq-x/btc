@@ -29,6 +29,13 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     private ChannelPromise handshakeFuture;
     private MoniterTask moniter;
     private WebSocketService service ;
+
+    /**
+     *
+     * @param handshaker
+     * @param service
+     * @param moniter 用于更新时间
+     */
     public WebSocketClientHandler(WebSocketClientHandshaker handshaker,WebSocketService service,MoniterTask moniter) {
         this.handshaker = handshaker;
         this.service = service;
