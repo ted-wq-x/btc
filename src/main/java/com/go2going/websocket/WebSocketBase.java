@@ -33,12 +33,12 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class WebSocketBase {
 
-    private Logger log = Logger.getLogger(WebSocketBase.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketBase.class);
     private WebSocketService service = null;
     private Timer timerTask = null;
     private MoniterTask moniter = null;
@@ -58,12 +58,13 @@ public abstract class WebSocketBase {
     }
 
     public void start() {
+        LOGGER.info("Enter start method");
         if (url == null) {
-            log.info("WebSocketClient start error  url can not be null");
+            LOGGER.info("WebSocketClient start error  url can not be null");
             return;
         }
         if (service == null) {
-            log.info("WebSocketClient start error  WebSocketService can not be null");
+            LOGGER.info("WebSocketClient start error  WebSocketService can not be null");
             return;
         }
         moniter = new MoniterTask(this);
@@ -72,6 +73,7 @@ public abstract class WebSocketBase {
 
         timerTask = new Timer();
         timerTask.schedule(moniter, 1000, 5000);
+        LOGGER.info("Exit start method");
     }
 
     public void setStatus(boolean flag) {
@@ -109,7 +111,7 @@ public abstract class WebSocketBase {
      */
     public void cancelFutureOrder(String apiKey, String secretKey,
                                   String symbol, long orderId, String contractType) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
                 + symbol + ", orderId=" + orderId + ", contractType="
                 + contractType);
         Map<String, String> preMap = new HashMap<String, String>();
@@ -138,7 +140,7 @@ public abstract class WebSocketBase {
      */
     public void cancelOrder(String apiKey, String secretKey, String symbol,
                             Long orderId) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
                 + symbol + ", orderId=" + orderId);
         Map<String, String> preMap = new HashMap<String, String>();
         preMap.put("api_key", apiKey);
@@ -167,7 +169,7 @@ public abstract class WebSocketBase {
      * @param secretKey
      */
     public void futureRealtrades(String apiKey, String secretKey) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
         StringBuilder preStr = new StringBuilder("api_key=");
         preStr.append(apiKey).append("&secret_key=").append(secretKey);
         String signStr = MD5Util.getMD5String(preStr.toString());
@@ -175,7 +177,7 @@ public abstract class WebSocketBase {
                 "{'event':'addChannel','channel':'ok_sub_futureusd_trades','parameters':{'api_key':'")
                 .append(apiKey).append("','sign':'").append(signStr)
                 .append("'},'binary':'true'}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
@@ -195,7 +197,7 @@ public abstract class WebSocketBase {
     public void futureTrade(String apiKey, String secretKey, String symbol,
                             String contractType, double price, int amount, int type,
                             double matchPrice, int leverRate) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", symbol="
                 + symbol + ", contractType=" + contractType + ", price="
                 + price + ", amount=" + amount + ", type=" + type
                 + ", matchPrice=" + matchPrice + ", leverRate=" + leverRate);
@@ -220,7 +222,7 @@ public abstract class WebSocketBase {
         StringBuilder tradeStr = new StringBuilder(
                 "{'event': 'addChannel','channel':'ok_futuresusd_trade','parameters':")
                 .append(params).append("}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
 
     }
@@ -229,7 +231,7 @@ public abstract class WebSocketBase {
      * 现货查询账户信息
      */
     public void getUserInfo(String apiKey, String secretKey) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
         StringBuilder preStr = new StringBuilder("api_key=");
         preStr.append(apiKey).append("&secret_key=").append(secretKey);
         String signStr = MD5Util.getMD5String(preStr.toString());
@@ -242,7 +244,7 @@ public abstract class WebSocketBase {
                 .append("','parameters':{'api_key':'").append(apiKey)
                 .append("','sign':'").append(signStr)
                 .append("'},'binary':'true'}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
@@ -253,7 +255,7 @@ public abstract class WebSocketBase {
      * @param secretKey
      */
     public void realTrades(String apiKey, String secretKey) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
         StringBuilder preStr = new StringBuilder("api_key=");
         preStr.append(apiKey).append("&secret_key=").append(secretKey);
         String signStr = MD5Util.getMD5String(preStr.toString());
@@ -266,7 +268,7 @@ public abstract class WebSocketBase {
                         + "','parameters':{'api_key':'").append(apiKey)
                 .append("','sign':'").append(signStr)
                 .append("'},'binary':'true'}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
@@ -306,7 +308,7 @@ public abstract class WebSocketBase {
         signPreMap.put("sign", signStr);
         String params = MD5Util.getParams(signPreMap);
         tradeStr.append(params).append("}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
@@ -317,7 +319,7 @@ public abstract class WebSocketBase {
      * @param type btc, ltc, eth
      */
     public void getTradeNum(String apiKey,String secretKey,String type){
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey+", type="+type);
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey+", type="+type);
         StringBuilder preStr = new StringBuilder("api_key=");
         preStr.append(apiKey).append("&secret_key=").append(secretKey);
         String signStr = MD5Util.getMD5String(preStr.toString());
@@ -330,7 +332,7 @@ public abstract class WebSocketBase {
                         + "','parameters':{'api_key':'").append(apiKey)
                 .append("','sign':'").append(signStr)
                 .append("'},'binary':'true'}");
-        log.info(tradeStr.toString());
+        LOGGER.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
@@ -370,7 +372,7 @@ public abstract class WebSocketBase {
             handler.handshakeFuture().sync();
             this.setStatus(true);
         } catch (Exception e) {
-            log.info("WebSocketClient start error ", e);
+            LOGGER.info("WebSocketClient start error ", e);
             group.shutdownGracefully();
             this.setStatus(false);
         }
@@ -378,7 +380,7 @@ public abstract class WebSocketBase {
 
     private void sendMessage(String message) {
         if (!isAlive) {
-            log.info("WebSocket is not Alive addChannel error");
+            LOGGER.info("WebSocket is not Alive addChannel error");
         }
         channel.writeAndFlush(new TextWebSocketFrame(message));
     }
@@ -426,13 +428,13 @@ class MoniterTask extends TimerTask {
     private WebSocketBase client = null;
 
     public void updateTime() {
-        // log.info("startTime is update");
+        // LOGGER.info("startTime is update");
         startTime = System.currentTimeMillis();
     }
 
     public MoniterTask(WebSocketBase client) {
         this.client = client;
-        // log.info("TimerTask is starting.... ");
+        // LOGGER.info("TimerTask is starting.... ");
     }
 
     public void run() {
@@ -440,11 +442,11 @@ class MoniterTask extends TimerTask {
         LOGGER.info("decide is connect and result is {}",isConnect);
         if (isConnect) {
             client.setStatus(false);
-            // log.info("Moniter reconnect....... ");
+            // LOGGER.info("Moniter reconnect....... ");
             client.reConnect();
         }
         client.sentPing();
-        // log.info("Moniter ping data sent.... ");
+        // LOGGER.info("Moniter ping data sent.... ");
     }
 
 }
