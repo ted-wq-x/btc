@@ -22,5 +22,13 @@ public class indexController {
     return "index";
   }
 
+  @GetMapping("/test")
+  public String test(ModelMap map){
+    return "test";
+  }
 
+  @GetMapping("/login")
+  public String login(ModelMap map){
+    return "login";
+  }
 }
