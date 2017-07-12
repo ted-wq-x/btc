@@ -361,7 +361,7 @@ public abstract class WebSocketBase {
             handler.handshakeFuture().sync();
             this.setStatus(true);
         } catch (Exception e) {
-            LOGGER.info("WebSocketClient start error ", e);
+            LOGGER.error("WebSocketClient start error ", e);
             group.shutdownGracefully();
             this.setStatus(false);
         }
@@ -396,7 +396,7 @@ public abstract class WebSocketBase {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("ERROR:"+e.getMessage());
         }
     }
 
@@ -411,7 +411,7 @@ public abstract class WebSocketBase {
  */
 class MoniterTask implements Runnable {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
     private static final int checkTime = 8000;
     private WebSocketBase client = null;
