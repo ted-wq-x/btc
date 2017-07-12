@@ -27,4 +27,5 @@ public class BtcApplication {
 			registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		}
 	}
+
 }
