@@ -61,7 +61,7 @@ public abstract class WebSocketBase {
         this.connect();
         //定时任务
         scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
-        scheduledExecutorService.scheduleWithFixedDelay(moniter, 1000, 5000, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(moniter, 1000, 25000, TimeUnit.MILLISECONDS);
         LOGGER.info("Exit start method");
     }
 
@@ -413,7 +413,7 @@ class MoniterTask implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
-    private static final int checkTime = 8000;
+    private static final int checkTime = 30000;
     private WebSocketBase client = null;
 
     public void updateTime() {

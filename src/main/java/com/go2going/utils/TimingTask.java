@@ -100,7 +100,7 @@ public class TimingTask {
    *
    * @param recordVoList map->key为bid,ask,sum
    */
-  private Map<String, Float> calNum(List<TradeRecordVo> recordVoList) {
+  public static Map<String, Float> calNum(List<TradeRecordVo> recordVoList) {
     Map<String, List<Float>> collect = recordVoList.stream().collect(Collectors.groupingBy(TradeRecordVo::getTradeType, Collectors.mapping(TradeRecordVo::getTradeNum, Collectors.toList())));
     Map<String, Float> returnMap = new HashMap<>();
     returnMap.put("sum", 0.0f);

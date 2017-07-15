@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:fragment="test">
 <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -9,7 +9,7 @@
 
     <!-- Bootstrap -->
     <link th:href="@{static/css/bootstrap.min.css}" rel="stylesheet"/>
-
+    <link th:href="@{static/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" media="screen"/>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -18,11 +18,164 @@
     <![endif]-->
 </head>
 <body>
-<h1>你好，世界！</h1>
+<div class="container">
+    <h1 align="center">获取某段时间交易量</h1>
+    <form class="form-horizontal" role="form" >
+        <div class="form-group">
+            <label for="dtp_input3" class="col-md-2 control-label">开始时间</label>
+            <div class="input-group date form_time col-sm-8" data-date="" data-date-format="yyyy-MM-dd hh:ii" data-link-field="dtp_input3" data-link-format="yyyy-MM-dd hh:ii" style="padding-left: 15px">
+                <input class="form-control" size="16" type="text" value="" readonly="readonly"/>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
+            </div>
+            <input type="hidden" id="dtp_input3" name="startTime" value="" /><br/>
+        </div>
+        <div class="form-group">
+            <label for="dtp_input4" class="col-md-2 control-label">结束时间</label>
+            <div class="input-group date form_time col-sm-8" data-date="" data-date-format="yyyy-MM-dd hh:ii" data-link-field="dtp_input4" data-link-format="yyyy-MM-dd hh:ii" style="padding-left: 15px">
+                <input class="form-control" size="16" type="text" value="" readonly="readonly"/>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
+            </div>
+            <input type="hidden" id="dtp_input4" name="endTime" value="" /><br/>
+        </div>
+        <div class="form-group">
+            <label for="tradeType" class="col-sm-2 control-label">交易类型</label>
+            <div class=" col-sm-8">
+                <select class="form-control" id="tradeType" name="tradeType">
+                    <option value="all">全部</option>
+                    <option value="bid">买入</option>
+                    <option value="ask">卖出</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="coinType" class="col-sm-2 control-label">货币类型</label>
+            <div class=" col-sm-8">
+                <select class="form-control" id="coinType" name="coinType">
+                    <option value="btc">比特币</option>
+                    <option value="ltc">莱特币</option>
+                    <option value="eth">以太坊</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-8">
+                <button type="button" class="btn btn-default" onclick="sendMsg()">查询</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script th:src="@{static/js/bootstrap.min.js}"></script>
+<script th:src="@{static/js/bootstrap-datetimepicker.min.js}"></script>
+<script th:src="@{static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script th:src="@{static/js/clientJs/sockjs.min.js}"></script>
+<script th:src="@{static/js/clientJs/stomp.js}"></script>
+<script>
+    var month = {
+        "一月": "1",
+        "二月": "2",
+        "三月": "3",
+        "四月": "4",
+        "五月": "5",
+        "六月": "6",
+        "七月": "7",
+        "八月": "8",
+        "九月": "9",
+        "十月": "10",
+        "十一月": "11",
+        "十二月": "12"
+    };
+
+    $('.form_time').datetimepicker({
+        language:  'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 1,
+        minView: 0,
+        maxView: 1,
+        forceParse: 0,
+        minuteStep:1
+    });
+
+    var stompClient = null;
+    // 开启socket连接
+    function connect() {
+        var socket = new SockJS('/socket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            notify("连接成功");
+            stompClient.subscribe("/topic/notice",function (data) {
+                notify(data.body);
+            })
+        });
+    }
+    // 断开socket连接
+    function disconnect() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+    // 向‘/app/change-notice’服务端发送消息
+    function sendName(value) {
+        stompClient.send("/app/change-notice", {}, value);
+    }
+    connect();
+
+ function notify(msg){
+     /*  测试html5 Notification*/
+     if (window.Notification) {
+         //        请求权限
+         Notification.requestPermission();
+         //获取权限
+         if (Notification.permission === 'granted') {
+
+             var notification = new Notification('看一看瞧一瞧啊，(＠・ˍ・)',{
+                 body:msg,
+                 icon:'http://onmb5ryy1.bkt.clouddn.com/%E6%96%B0%E5%9F%82%E7%BB%93%E8%A1%A3.jpg',
+                 tag:'welcome',
+                 noscreen:true,
+                 silent:false
+             });
+
+             setTimeout(function () {
+                 notification.close();
+             },3000);
+             notification.onclick = function () {
+                 notification.close();
+             };
+         }
+     }
+    }
+
+function sendMsg() {
+    var coinType = $("#coinType").val();
+    var startTime = $("#dtp_input3").val();
+    var endTime = $("#dtp_input4").val();
+    var tradeType = $("#tradeType").val();
+    var start = startTime.split("-");
+    start[1] = month[start[1]];
+    startTime = start.toString();
+    var end = endTime.split("-");
+    end[1] = month[end[1]];
+    endTime = end.toString();
+    var smd = {
+        "coinType": coinType,
+        "startTime": startTime,
+        "endTime": endTime,
+        "tradeType": tradeType
+    };
+    sendName(JSON.stringify(smd));
+}
+</script>
 </body>
 </html>
