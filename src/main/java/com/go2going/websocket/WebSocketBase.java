@@ -61,7 +61,14 @@ public abstract class WebSocketBase {
         this.connect();
         //定时任务
         scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
-        scheduledExecutorService.scheduleWithFixedDelay(moniter, 1000, 25000, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                //防止发生异常停止
+                moniter.run();
+            } catch (Exception e) {
+                LOGGER.error("find exception in scheduledExecutorService:{}",e.getMessage());
+            }
+        }, 1000, 25000, TimeUnit.MILLISECONDS);
         LOGGER.info("Exit start method");
     }
 
@@ -409,7 +416,7 @@ public abstract class WebSocketBase {
 /**
  * 心跳检查
  */
-class MoniterTask implements Runnable {
+class MoniterTask  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
