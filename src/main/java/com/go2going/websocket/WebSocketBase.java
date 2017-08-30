@@ -450,7 +450,7 @@ class MoniterTask {
 
         boolean isConnect = System.currentTimeMillis() - startTime > checkTime;
         LOGGER.info("decide is connect and result is {}", isConnect);
-        if (isConnect) {
+        if (!isConnect) {
 //            client.setStatus(false);
             // LOGGER.info("Moniter reconnect....... ");
 //            client.reConnect();
