@@ -29,6 +29,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     private ChannelPromise handshakeFuture;
     private MoniterTask moniter;
     private WebSocketService service ;
+    private WebSocketBase webSocketBase;
 
     /**
      *
@@ -36,10 +37,11 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
      * @param service
      * @param moniter 用于更新时间
      */
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker,WebSocketService service,MoniterTask moniter) {
+    public WebSocketClientHandler(WebSocketClientHandshaker handshaker,WebSocketService service,MoniterTask moniter,WebSocketBase webSocketBase) {
         this.handshaker = handshaker;
         this.service = service;
         this.moniter = moniter;
+        this.webSocketBase = webSocketBase;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -59,6 +61,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         LOGGER.info("WebSocket Client disconnected!");
+        webSocketBase.reConnect();
     }
 
     @Override

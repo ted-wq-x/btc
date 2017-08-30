@@ -25,7 +25,7 @@ public class BtcApplicationTests {
 	@Resource
 	private TradeRecordDao tradeRecordDao;
 	@Test
-//	@Ignore
+	@Ignore
 	public void contextLoads() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(2017,Calendar.JULY,6 ,14,28,0);

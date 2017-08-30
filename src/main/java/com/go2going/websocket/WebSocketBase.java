@@ -4,6 +4,7 @@ package com.go2going.websocket;
  * Created by BlueT on 2017/7/3.
  */
 
+import com.go2going.common.WestCoastScheduledExecutor;
 import com.go2going.utils.MD5Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -23,14 +24,13 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public abstract class WebSocketBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketBase.class);
     private WebSocketService service = null;
-    private ScheduledExecutorService scheduledExecutorService = null;
+    private final ScheduledExecutorService scheduledExecutorService = new WestCoastScheduledExecutor(1);
     private MoniterTask moniter = null;
     private EventLoopGroup group = null;
     private Bootstrap bootstrap = null;
@@ -38,7 +38,9 @@ public abstract class WebSocketBase {
     private String url = null;
     private ChannelFuture future = null;
     private boolean isAlive = false;
-    /** 国内站siteFlag=0,国际站siteFlag=1 */
+    /**
+     * 国内站siteFlag=0,国际站siteFlag=1
+     */
     private int siteFlag = 0;
     private Set<String> subscribChannel = new HashSet<String>();
 
@@ -60,13 +62,12 @@ public abstract class WebSocketBase {
         moniter = new MoniterTask(this);
         this.connect();
         //定时任务
-        scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 //防止发生异常停止
                 moniter.run();
             } catch (Exception e) {
-                LOGGER.error("find exception in scheduledExecutorService:{}",e.getMessage());
+                LOGGER.error("find exception in scheduledExecutorService:{}", e.getMessage());
             }
         }, 1000, 25000, TimeUnit.MILLISECONDS);
         LOGGER.info("Exit start method");
@@ -310,18 +311,19 @@ public abstract class WebSocketBase {
 
     /**
      * //TODO
+     *
      * @param apiKey
      * @param secretKey
-     * @param type btc, ltc, eth
+     * @param type      btc, ltc, eth
      */
-    public void getTradeNum(String apiKey,String secretKey,String type){
-        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey+", type="+type);
+    public void getTradeNum(String apiKey, String secretKey, String type) {
+        LOGGER.debug("apiKey=" + apiKey + ", secretKey=" + secretKey + ", type=" + type);
         StringBuilder preStr = new StringBuilder("api_key=");
         preStr.append(apiKey).append("&secret_key=").append(secretKey);
         String signStr = MD5Util.getMD5String(preStr.toString());
-        String channel = "ok_sub_spotcny_"+type+"_trades";
+        String channel = "ok_sub_spotcny_" + type + "_trades";
         if (siteFlag == 1) {
-            channel = "ok_sub_spotusd_"+type+"_trades";
+            channel = "ok_sub_spotusd_" + type + "_trades";
         }
         StringBuilder tradeStr = new StringBuilder(
                 "{'event':'addChannel','channel':'" + channel
@@ -339,6 +341,8 @@ public abstract class WebSocketBase {
             if (uri.getHost().contains("com")) {
                 siteFlag = 1;
             }
+            LOGGER.info("reconnect method step 1");
+
             group = new NioEventLoopGroup(1);
             bootstrap = new Bootstrap();
             final SslContext sslCtx = SslContext.newClientContext();
@@ -346,7 +350,7 @@ public abstract class WebSocketBase {
                     WebSocketClientHandshakerFactory.newHandshaker(uri,
                             WebSocketVersion.V13, null, false,
                             new DefaultHttpHeaders(), Integer.MAX_VALUE),
-                    service, moniter);
+                    service, moniter, this);
             bootstrap.group(group).option(ChannelOption.TCP_NODELAY, true)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -362,11 +366,20 @@ public abstract class WebSocketBase {
                     });
 
             future = bootstrap.connect(uri.getHost(), uri.getPort());
+
             future.addListener((ChannelFutureListener) future -> {
             });
+
             channel = future.sync().channel();
+
             handler.handshakeFuture().sync();
-            this.setStatus(true);
+
+            if (future.isSuccess()) {
+                this.setStatus(true);
+            } else {
+                LOGGER.error("connect is not success,fuck you");
+                this.setStatus(false);
+            }
         } catch (Exception e) {
             LOGGER.error("WebSocketClient start error ", e);
             group.shutdownGracefully();
@@ -386,12 +399,13 @@ public abstract class WebSocketBase {
         this.sendMessage(dataMsg);
     }
 
-    public void reConnect() {
+    public synchronized void reConnect() {
+        LOGGER.info("Enter reConnect method");
         try {
             this.group.shutdownGracefully();
             this.group = null;
             this.connect();
-            if (future.isSuccess()) {
+            if (this.future.isSuccess()) {
                 this.setStatus(true);
                 this.sentPing();
                 Iterator<String> it = subscribChannel.iterator();
@@ -401,9 +415,8 @@ public abstract class WebSocketBase {
                 }
 
             }
-
         } catch (Exception e) {
-            LOGGER.error("ERROR:"+e.getMessage());
+            LOGGER.error("ERROR:" + e.getMessage());
         }
     }
 
@@ -416,15 +429,15 @@ public abstract class WebSocketBase {
 /**
  * 心跳检查
  */
-class MoniterTask  {
+class MoniterTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoniterTask.class);
     private long startTime = System.currentTimeMillis();
-    private static final int checkTime = 30000;
+    private static final int checkTime = 60000;
     private WebSocketBase client = null;
 
     public void updateTime() {
-        // LOGGER.info("startTime is update");
+//        LOGGER.info("startTime is update");
         startTime = System.currentTimeMillis();
     }
 
@@ -434,14 +447,16 @@ class MoniterTask  {
     }
 
     public void run() {
+
         boolean isConnect = System.currentTimeMillis() - startTime > checkTime;
-        LOGGER.info("decide is connect and result is {}",isConnect);
+        LOGGER.info("decide is connect and result is {}", isConnect);
         if (isConnect) {
-            client.setStatus(false);
+//            client.setStatus(false);
             // LOGGER.info("Moniter reconnect....... ");
-            client.reConnect();
+//            client.reConnect();
+            client.sentPing();
         }
-        client.sentPing();
+
         // LOGGER.info("Moniter ping data sent.... ");
     }
 
