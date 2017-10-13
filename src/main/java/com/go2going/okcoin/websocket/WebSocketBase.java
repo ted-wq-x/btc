@@ -1,11 +1,11 @@
-package com.go2going.websocket;
+package com.go2going.okcoin.websocket;
 
 /**
  * Created by BlueT on 2017/7/3.
  */
 
 import com.go2going.common.WestCoastScheduledExecutor;
-import com.go2going.utils.MD5Util;
+import com.go2going.okcoin.utils.MD5Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public abstract class WebSocketBase {
@@ -38,6 +39,8 @@ public abstract class WebSocketBase {
     private String url = null;
     private ChannelFuture future = null;
     private boolean isAlive = false;
+
+    private static Semaphore semaphore = new Semaphore(1);
     /**
      * 国内站siteFlag=0,国际站siteFlag=1
      */
@@ -387,9 +390,10 @@ public abstract class WebSocketBase {
         }
     }
 
-    private void sendMessage(String message) {
+    private synchronized void sendMessage(String message) {
         if (!isAlive) {
-            LOGGER.info("WebSocket is not Alive addChannel error");
+            LOGGER.info("WebSocket is not Alive addChannel error and reconnect");
+            reConnect();
         }
         channel.writeAndFlush(new TextWebSocketFrame(message));
     }
@@ -399,8 +403,13 @@ public abstract class WebSocketBase {
         this.sendMessage(dataMsg);
     }
 
-    public synchronized void reConnect() {
+    public  void reConnect() {
         LOGGER.info("Enter reConnect method");
+        if (!semaphore.tryAcquire()) {
+            LOGGER.info("Concurrent access and return");
+            return;
+        }
+
         try {
             this.group.shutdownGracefully();
             this.group = null;
@@ -417,6 +426,8 @@ public abstract class WebSocketBase {
             }
         } catch (Exception e) {
             LOGGER.error("ERROR:" + e.getMessage());
+        }finally {
+            semaphore.release();
         }
     }
 
@@ -437,13 +448,11 @@ class MoniterTask {
     private WebSocketBase client = null;
 
     public void updateTime() {
-//        LOGGER.info("startTime is update");
         startTime = System.currentTimeMillis();
     }
 
     public MoniterTask(WebSocketBase client) {
         this.client = client;
-        // LOGGER.info("TimerTask is starting.... ");
     }
 
     public void run() {
@@ -456,8 +465,6 @@ class MoniterTask {
 //            client.reConnect();
             client.sentPing();
         }
-
-        // LOGGER.info("Moniter ping data sent.... ");
     }
 
 }

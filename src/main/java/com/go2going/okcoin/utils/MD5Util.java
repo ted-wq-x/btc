@@ -1,4 +1,4 @@
-package com.go2going.utils;
+package com.go2going.okcoin.utils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

@@ -1,4 +1,4 @@
-package com.go2going.websocket;
+package com.go2going.okcoin.websocket;
 
 import java.io.IOException;
 import java.util.zip.DataFormatException;

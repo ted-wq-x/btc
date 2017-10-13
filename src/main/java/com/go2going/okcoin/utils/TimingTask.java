@@ -1,8 +1,10 @@
-package com.go2going.utils;
+package com.go2going.okcoin.utils;
 
 import com.go2going.config.ApiPropModel;
 import com.go2going.dao.TradeRecordDao;
 import com.go2going.model.vo.TradeRecordVo;
+import com.go2going.utils.EmailUtils;
+import com.go2going.utils.SpringContext;
 import com.sun.javafx.binding.StringFormatter;
 import javafx.beans.binding.StringExpression;
 import org.slf4j.Logger;

@@ -1,12 +1,12 @@
 package com.go2going;
 
+import com.go2going.bitfinex.VertStartCore;
 import com.go2going.config.ApiPropModel;
 import com.go2going.config.ProfPropModel;
-import com.go2going.interfaceApi.ApiAnnotation;
-import com.go2going.utils.PackageScan;
-import com.go2going.websocket.BuissnesWebSocketServiceImpl;
-import com.go2going.websocket.WebSocketService;
-import com.go2going.websocket.WebSoketClient;
+import com.go2going.okcoin.interfaceApi.ApiAnnotation;
+import com.go2going.okcoin.utils.PackageScan;
+import com.go2going.okcoin.websocket.WebSocketService;
+import com.go2going.okcoin.websocket.WebSoketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -33,6 +33,9 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
     @Resource
     private ApiPropModel apiPropModel;
 
+    @Resource
+    private VertStartCore core;
+
     /**
      * 订阅消息处理类,用于处理WebSocket服务返回的消息
      */
@@ -44,18 +47,30 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
         LOGGER.info("Enter application startUp init");
         initApiMap();
 
-        //启动websocket
+        //启动okcoin websocket
         startUpWebSocket();
+
+        //启动bitfinex websocket
+
+        bitfinexWebSocket();
+
         LOGGER.info("Exit application startUp init");
+    }
+
+    /**
+     * 启动bitfinex WebSocket
+     */
+    private void bitfinexWebSocket(){
+        core.start();
     }
 
     private void startUpWebSocket() {
 
         // apiKey 为用户申请的apiKey
-        String apiKey = profPropModel.getApiKey();
-
-        // secretKey为用户申请的secretKey
-        String secretKey = profPropModel.getSecretKey();
+//        String apiKey = profPropModel.getApiKey();
+//
+//        // secretKey为用户申请的secretKey
+//        String secretKey = profPropModel.getSecretKey();
 
         String url = profPropModel.getUrl();
 
@@ -77,7 +92,7 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
      * 将注解的api和类进行对应
      */
     private void initApiMap(){
-        Set<Class<?>> classes = PackageScan.getClasses("com.go2going.interfaceApi");
+        Set<Class<?>> classes = PackageScan.getClasses("com.go2going.okcoin.interfaceApi");
 
         classes.stream().filter(aClass -> aClass.isAnnotationPresent(ApiAnnotation.class)).forEach(aClass ->{
             ApiAnnotation annotation = aClass.getAnnotation(ApiAnnotation.class);

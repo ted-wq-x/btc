@@ -1,10 +1,10 @@
-package com.go2going.websocket;
+package com.go2going.okcoin.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.go2going.ApplicationStartUp;
-import com.go2going.interfaceApi.Subject;
+import com.go2going.okcoin.interfaceApi.Subject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 

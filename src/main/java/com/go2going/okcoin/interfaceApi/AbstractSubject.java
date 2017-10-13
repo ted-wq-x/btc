@@ -1,6 +1,6 @@
-package com.go2going.interfaceApi;
+package com.go2going.okcoin.interfaceApi;
 
-import com.go2going.websocket.WebSocketBase;
+import com.go2going.okcoin.websocket.WebSocketBase;
 
 /**
  * Created by BlueT on 2017/7/4.

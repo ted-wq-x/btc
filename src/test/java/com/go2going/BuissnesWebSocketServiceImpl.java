@@ -3,7 +3,7 @@ package com.go2going;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.go2going.websocket.WebSocketService;
+import com.go2going.okcoin.websocket.WebSocketService;
 import org.apache.log4j.Logger;
 
 /**

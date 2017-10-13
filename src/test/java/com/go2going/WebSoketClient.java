@@ -1,7 +1,7 @@
 package com.go2going;
 
-import com.go2going.websocket.WebSocketBase;
-import com.go2going.websocket.WebSocketService;
+import com.go2going.okcoin.websocket.WebSocketBase;
+import com.go2going.okcoin.websocket.WebSocketService;
 
 /**
  * Created by BlueT on 2017/7/3.

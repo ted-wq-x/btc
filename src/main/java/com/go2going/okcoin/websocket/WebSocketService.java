@@ -1,4 +1,4 @@
-package com.go2going.websocket;
+package com.go2going.okcoin.websocket;
 
 /**
  * Created by BlueT on 2017/7/3.

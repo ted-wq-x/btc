@@ -1,4 +1,4 @@
-package com.go2going.interfaceApi;
+package com.go2going.okcoin.interfaceApi;
 
 import java.lang.annotation.*;
 

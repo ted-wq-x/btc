@@ -9,7 +9,6 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
@@ -54,8 +53,6 @@ class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 		registry.enableSimpleBroker("/topic");//客户端接受服务消息的前缀
 		registry.setApplicationDestinationPrefixes("/app");//服务端接受消息的前缀
 	}
-
-
 }
 
 
