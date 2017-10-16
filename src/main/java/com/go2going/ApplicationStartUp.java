@@ -1,12 +1,13 @@
 package com.go2going;
 
-import com.go2going.bitfinex.VertStartCore;
+import com.go2going.bitfinex.VertClient;
 import com.go2going.config.ApiPropModel;
 import com.go2going.config.ProfPropModel;
 import com.go2going.okcoin.interfaceApi.ApiAnnotation;
 import com.go2going.okcoin.utils.PackageScan;
 import com.go2going.okcoin.websocket.WebSocketService;
 import com.go2going.okcoin.websocket.WebSoketClient;
+import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -34,7 +35,8 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
     private ApiPropModel apiPropModel;
 
     @Resource
-    private VertStartCore core;
+    private VertClient vertClient;
+
 
     /**
      * 订阅消息处理类,用于处理WebSocket服务返回的消息
@@ -48,10 +50,9 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
         initApiMap();
 
         //启动okcoin websocket
-        startUpWebSocket();
+//        startUpWebSocket();
 
         //启动bitfinex websocket
-
         bitfinexWebSocket();
 
         LOGGER.info("Exit application startUp init");
@@ -61,16 +62,23 @@ public class ApplicationStartUp implements ApplicationListener<ContextRefreshedE
      * 启动bitfinex WebSocket
      */
     private void bitfinexWebSocket(){
-        core.start();
+        Vertx.vertx().deployVerticle(vertClient, result -> {
+            if (result.failed()) {
+                LOGGER.info("Deployment failed!----------------");
+            }
+        });
     }
 
+    /**
+     * 启动okCoin的websocket
+     */
     private void startUpWebSocket() {
 
         // apiKey 为用户申请的apiKey
-//        String apiKey = profPropModel.getApiKey();
+        String apiKey = profPropModel.getApiKey();
 //
 //        // secretKey为用户申请的secretKey
-//        String secretKey = profPropModel.getSecretKey();
+        String secretKey = profPropModel.getSecretKey();
 
         String url = profPropModel.getUrl();
 

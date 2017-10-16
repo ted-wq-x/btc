@@ -107,7 +107,16 @@ public class TimingTask {
     Map<String, Float> returnMap = new HashMap<>();
     returnMap.put("sum", 0.0f);
     collect.forEach((s, floats) -> {
-      Optional<Float> reduce = floats.stream().reduce((aFloat, aFloat2) -> aFloat += aFloat2);
+      Optional<Float> reduce = floats.stream().reduce((aFloat, aFloat2) -> {
+        if (aFloat2 < 0) {
+          aFloat2 = -aFloat2;
+        }
+        if (aFloat < 0) {
+          aFloat = -aFloat;
+        }
+        aFloat += aFloat2;
+        return aFloat;
+      });
       if (reduce.isPresent()) {
         Float aFloat = reduce.get();
         returnMap.put(s, aFloat);

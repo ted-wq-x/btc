@@ -1,10 +1,19 @@
 package com.go2going.bitfinex;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.go2going.common.ExceptionProp;
+import com.go2going.dao.TradeRecordDao;
+import com.go2going.model.bo.GoodsCategory;
+import com.go2going.model.vo.TradeRecordVo;
+import com.go2going.utils.SpringContext;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.http.*;
-import io.vertx.core.json.Json;
-import io.vertx.core.net.OpenSSLEngineOptions;
+import io.vertx.core.WorkerExecutor;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.ProxyType;
 import org.slf4j.Logger;
@@ -12,16 +21,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.crypto.Mac;
-import javax.crypto.MacSpi;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * 项目名称：  btc<br>
@@ -35,64 +45,158 @@ import java.util.Map;
 public class VertClient extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VertClient.class);
-
-    @Value("${bitfinex}")
-    private String url;
+    private static final String host = "api.bitfinex.com";
+    private static final String requestUrl = "/ws/2";
 
     @Value("${bitfinexApiKey}")
-    private String apiKey="3YtPxt3pkFJ1b6wDNoysYzugUDbXC8EMksUO3FotQwc";
+    private String apiKey;
 
     @Value("${bitfinexApiSecret}")
-    private String apiSecret="hJYtMGOJKuhshnFROzt6o4AlnZugL189N06tn551aw8";
+    private String apiSecret;
+
+    @Resource
+    private ExceptionProp exceptionProp;
 
     private WebSocket webSocket;
 
-//    {"apiKey":"3YtPxt3pkFJ1b6wDNoysYzugUDbXC8EMksUO3FotQwc","event":"auth","authPayload":"AUTH1507861663542000","authSig":"6f2adf8b326b269b8924174cc6d00f049a960086095cfde69bf065a76193a84979cd002266110207b5ee024b9cf6d449"}
+    private WorkerExecutor myCore;
+
+    private TradeRecordDao recordDao;
+
+
 
     @Override
-    public void start(){
+    public void stop() throws Exception {
+        if (webSocket != null) {
+            webSocket.close();
+        }
+    }
 
+    @Override
+    public void start() {
+        recordDao = SpringContext.getBean(TradeRecordDao.class);
+        //TODO 检查启动参数
         HttpClientOptions options = new HttpClientOptions().
                 setDefaultPort(443).
-                setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setHost("127.0.0.1") .setPort(1080)).
-                setLogActivity(true).
+                setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setHost("127.0.0.1").setPort(1080)).
                 setTrustAll(true).
                 setSsl(true).
-                setDefaultHost("api.bitfinex.com");
+                setDefaultHost(host);
+
+        myCore = vertx.createSharedWorkerExecutor("MyCore");
+
         HttpClient httpClient = vertx.createHttpClient(options);
 
-        httpClient.websocket("/ws/2", webSocket -> {
+        createWebSocket(httpClient);
+
+
+    }
+
+    private void createWebSocket(HttpClient httpClient) {
+        httpClient.websocket(requestUrl, webSocket -> {
 
             LOGGER.info("bitfinex websocket has Connected!");
-            webSocket.frameHandler(event -> {
-                System.out.println("受到数据"+event.textData());
-            });
+            webSocket.frameHandler(frame -> this.handler(frame.textData()));
+
+            webSocket.handler(event -> LOGGER.info(new String(event.getBytes())));
+
             webSocket.exceptionHandler(event -> LOGGER.error(event.getMessage()));
-            webSocket.handler(buffer -> {
 
-                LOGGER.info("连接正常" + new String(buffer.getBytes()));
-
-            });
-
-            webSocket.endHandler(event -> {
+            webSocket.endHandler(event ->{
                 LOGGER.info("End webSocket connection!");
+                //
+                createWebSocket(httpClient);
             });
 
             this.webSocket = webSocket;
+            //初始化订阅
+            initChannel();
         });
     }
 
 
-    public void initChannel(){
+    public void initChannel() {
+        //测试ping
+//        webSocket.writeTextMessage(SendReqBo.getPingCmd());
+        webSocket.writeTextMessage(SendReqBo.getTrades(SendReqBo.Pairs.BTCUSD));
+    }
+
+    private BlockingDeque<TradeRecordVo> queue = new LinkedBlockingDeque<>(30);
+
+    /**
+     * 数据结构不同得分开处理
+     * @param s
+     */
+    private void handler(String s) {
+        //检查数据异常
+        JSONObject jsonObject = null;
+        try {
+            jsonObject =JSONObject.parseObject(s) ;
+        } catch (JSONException e) {
+        }
+
+        if (jsonObject == null) {
+            //日常数据
+
+            myCore.executeBlocking(future -> {
+                //处理消息
+                List<TradeRecordVo> data = getData(s);
+//                queue.addAll(data);
+//                if (queue.size() >= 20) {
+//                    TradeRecordDao recordDao = SpringContext.getBean(TradeRecordDao.class);
+//                    List<TradeRecordVo> temp = new ArrayList<>();
+//                    queue.drainTo(temp);
+//                    recordDao.save(temp);
+//                    LOGGER.info(Thread.currentThread()+"插入数据："+temp.size()+",队列剩余"+queue.size());
+//                }
+                if(!data.isEmpty()){
+                    recordDao.save(data);
+                }
+                future.complete();
+            }, false, event -> {
+                //获取消息的处理结果
+                if (event.failed()) {
+                    LOGGER.error("处理消息失败" + event.cause());
+                }
+            });
+        } else {
+            // 处理事件
+            String code = jsonObject.getString("code");
+
+            if (code != null) {
+                String codeMsg = exceptionProp.getCodeMsg(code);
+                LOGGER.error(codeMsg);
+                return;
+            }
+            String event = jsonObject.getString("event");
+            switch (event) {
+                default:
+                    LOGGER.info("未处理的event:" + event);
+                    break;
+                case "subscribed":
+                    String channel = jsonObject.getString("channel");
+                    String channelId = jsonObject.getString("channelId");
+                    String pair = jsonObject.getString("pair");
+                    SendReqBo.Pairs pairs = SendReqBo.Pairs.valueOf(pair);
+                    //TODO 就一个处理类型
+                    if (channel.equals(SendReqBo.Channel.TRADES.getName())) {
+                    }
+                    break;
+                case "info":
+                    break;
+            }
+        }
+
 
     }
 
     /**
      * 生成认证参数
+     *
      * @return
      */
-    private String  getinitParam(){
-        long authNonce  = new Date().getTime()*1000;
+    private String getinitParam() {
+        long authNonce = new Date().getTime() * 1000;
         String authPayload = "AUTH" + authNonce;
 
         String authSig = crypto(authPayload);
@@ -108,6 +212,7 @@ public class VertClient extends AbstractVerticle {
 
     /**
      * HMAC-sha384 signature
+     *
      * @return
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
@@ -131,4 +236,65 @@ public class VertClient extends AbstractVerticle {
 
         return new HexBinaryAdapter().marshal(digest);
     }
+
+
+    /**
+     * 数组index=0为channelId
+     * @param string
+     * @return
+     */
+    public List<TradeRecordVo> getData(String string) {
+        List<TradeRecordVo> list = new ArrayList<>();
+        JSONArray objects = JSON.parseArray(string);
+
+        Integer channelId = objects.getInteger(0);
+
+        int size = objects.size();
+
+        if (size == 3) {
+            //包含tu和td的待处理数据,目前两种情况的数据是一样的，所以只处理一种
+            if(objects.getString(1).equals("tu")){
+                JSONArray o1 = objects.getJSONArray(2);
+                list.add(getTradeRecordVo(o1));
+            }
+        } else if (size==2) {
+            Object o = objects.get(1);
+            if (o == "tb") {
+                //心跳
+            } else if (o instanceof JSONArray) {
+                //大量的待处理数据
+                JSONArray os = (JSONArray) o;
+
+                for (int i = 0; i < os.size(); i++) {
+                    JSONArray o1 = os.getJSONArray(i);
+                    TradeRecordVo tradeRecordVo = getTradeRecordVo(o1);
+                    list.add(tradeRecordVo);
+                }
+            }
+        }
+        return list;
+    }
+
+    private TradeRecordVo getTradeRecordVo(JSONArray o1) {
+        TradeRecordVo tradeRecordVo = new TradeRecordVo();
+        Long id = o1.getLong(0);
+        Long timeStamp = o1.getLong(1);
+        Float tradeNum = o1.getFloat(2);
+        Float tradePrice = o1.getFloat(3);
+        tradeRecordVo.setId(id);
+        tradeRecordVo.setTradeTime(new Date(timeStamp));
+        tradeRecordVo.setTradeNum(tradeNum);
+
+        if (tradeNum > 0) {
+            tradeRecordVo.setTradeType("bid");
+        } else {
+            tradeRecordVo.setTradeType("ask");
+        }
+
+        tradeRecordVo.setGoodsCategory(GoodsCategory.BTC);
+        tradeRecordVo.setPrice(tradePrice);
+        return tradeRecordVo;
+    }
+
 }
+

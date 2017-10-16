@@ -1,5 +1,6 @@
 package com.go2going;
 
+import com.go2going.bitfinex.SendReqBo;
 import com.go2going.okcoin.websocket.WebSocketService;
 
 /**
@@ -7,6 +8,5 @@ import com.go2going.okcoin.websocket.WebSocketService;
  */
 public class Main {
     public static void main(String[] args) {
-
     }
 }

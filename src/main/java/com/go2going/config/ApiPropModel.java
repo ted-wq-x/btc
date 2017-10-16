@@ -3,7 +3,9 @@ package com.go2going.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -11,9 +13,12 @@ import java.util.Map;
  * Created by BlueT on 2017/7/4.
  */
 @Component
+@Validated
 @ConfigurationProperties()
 public class ApiPropModel {
+  @NotNull
   private String[] channels;
+  @NotNull
   private Map<String, Double> remind;
 
   public Map<String, Double> getRemind() {
